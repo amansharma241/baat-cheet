@@ -27,7 +27,7 @@ const SignUp = () => {
             });
 
             setSuccess('Sign up successful! You can now log in.');
-            navigate('/signin')
+            navigate('/chat')
         } catch (err) {
             setError(err.message);
         }

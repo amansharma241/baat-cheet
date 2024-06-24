@@ -1,13 +1,19 @@
-import React from 'react';
-import { useChat } from '../Contexts/ChatContext';
+import { useState } from "react";
+import { useChat } from "../Contexts/ChatContext";
+import useActiveUsers from "./Utils/useActiveUsers";
+import { useAuth } from "../Contexts/AuthContext";
 
 const ChatComponent = () => {
-  const { messages, newMessage, setNewMessage, users, selectedUser, setSelectedUser, handleSendMessage } = useChat();
+  const { messages, users, selectedUser, setSelectedUser, handleSendMessage } = useChat();
+  const {currentUser} = useAuth()
+
+  const [newMessage, setNewMessage] = useState("");
+  const { activeUsers, inactiveUsers } = useActiveUsers();
 
   const handleUserClick = (user) => {
     setSelectedUser(user); // Set selected user
   };
-  console.log(users);
+
   return (
     <div className="flex h-screen">
       {/* User List */}
@@ -16,22 +22,38 @@ const ChatComponent = () => {
         {/* Active Users */}
         <div>
           <h3 className="text-sm font-semibold mb-2">Active Users</h3>
-          {users.filter(user => user.status && user.status.online).map(user => (
-            <div key={user.id} className={`flex items-center cursor-pointer hover:bg-gray-300 p-2 rounded mb-2 ${selectedUser && selectedUser.id === user.id ? 'bg-gray-300' : ''}`} onClick={() => handleUserClick(user)}>
-              <span className="w-2 h-2 rounded-full mr-2 bg-green-500"></span>
-              <span>{user.email}</span>
-            </div>
-          ))}
+          {activeUsers?.filter(user => user?.uid !== currentUser?.uid)?.map((user) => (
+              <div
+                key={user.id}
+                className={`flex items-center cursor-pointer hover:bg-gray-300 p-2 rounded mb-2 ${
+                  selectedUser && selectedUser.id === user.id
+                    ? "bg-gray-300"
+                    : ""
+                }`}
+                onClick={() => handleUserClick(user)}
+              >
+                <span className="w-2 h-2 rounded-full mr-2 bg-green-500"></span>
+                <span>{user.email}</span>
+              </div>
+            ))}
         </div>
         {/* Inactive Users */}
         <div className="mt-4">
           <h3 className="text-sm font-semibold mb-2">Inactive Users</h3>
-          {users.filter(user => !(user.status && user.status.online)).map(user => (
-            <div key={user.id} className={`flex items-center cursor-pointer hover:bg-gray-300 p-2 rounded mb-2 ${selectedUser && selectedUser.id === user.id ? 'bg-gray-300' : ''}`} onClick={() => handleUserClick(user)}>
-              <span className="w-2 h-2 rounded-full mr-2 bg-gray-400"></span>
-              <span>{user.email}</span>
-            </div>
-          ))}
+          {inactiveUsers.filter(user => user.uid !== currentUser.uid).map((user) => (
+              <div
+                key={user.id}
+                className={`flex items-center cursor-pointer hover:bg-gray-300 p-2 rounded mb-2 ${
+                  selectedUser && selectedUser.id === user.id
+                    ? "bg-gray-300"
+                    : ""
+                }`}
+                onClick={() => handleUserClick(user)}
+              >
+                <span className="w-2 h-2 rounded-full mr-2 bg-gray-400"></span>
+                <span>{user.email}</span>
+              </div>
+            ))}
         </div>
       </div>
 
@@ -45,24 +67,43 @@ const ChatComponent = () => {
         )}
 
         {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex flex-col flex-1 overflow-y-auto p-4">
           {selectedUser ? (
-            messages.filter(message => (message.sender === selectedUser.id || message.receiver === selectedUser.id)).map(message => (
-              <div key={message.id} className={`flex justify-${message.sender === selectedUser.id ? 'end' : 'start'} mb-2`}>
-                <div className={`bg-${message.sender === selectedUser.id ? 'blue' : 'gray'}-300 p-2 rounded`}>
-                  <p className="text-sm">{message.text}</p>
-                  <span className="text-xs text-gray-600">{new Date(message.timestamp).toLocaleString()}</span>
+            messages
+              .filter(
+                (message) =>
+                  message.sender === selectedUser.id ||
+                  message.receiver === selectedUser.id
+              )
+              .map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex items-${
+                    message.sender === selectedUser.id ? "end" : "start"
+                  } mb-2`}
+                >
+                  <div
+                    className={`bg-${
+                      message.sender === selectedUser.id ? "blue" : "gray"
+                    }-300 p-2 rounded`}
+                  >
+                    <p className="text-sm">{message.text}</p>
+                    <span className="text-xs text-gray-600">
+                      {new Date(message.timestamp).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
-            <p className="text-center text-gray-500">Select a user to start chatting</p>
+            <p className="text-center text-gray-500">
+              Select a user to start chatting
+            </p>
           )}
         </div>
 
         {/* Message Input */}
         {selectedUser && (
-          <div className="flex p-2">
+          <form onSubmit={(e) => e.preventDefault()} className="flex p-2">
             <input
               type="text"
               value={newMessage}
@@ -71,12 +112,16 @@ const ChatComponent = () => {
               placeholder="Type your message..."
             />
             <button
-              onClick={handleSendMessage}
+              type="submit"
+              onClick={() => {
+                handleSendMessage(newMessage);
+                setNewMessage("");
+              }}
               className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
             >
               Send
             </button>
-          </div>
+          </form>
         )}
       </div>
     </div>

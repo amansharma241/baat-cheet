@@ -1,34 +1,39 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../firebase';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import usePresence from "../Components/Utils/usePresence";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, user => {
-            setCurrentUser(user);
-            setLoading(false);
-        });
-        return unsubscribe;
-    }, []);
+  usePresence(currentUser)
+ 
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+  }, []);
 
-    // useEffect(() => {
-    //     if (currentUser) {
-    //         setUserOnlineStatus(currentUser.uid);
-    //     }
-    // }, [currentUser]);
+  useEffect(() => {
+    if (currentUser) {
+      setIsLoggedIn(true);
+    }
+  }, [currentUser]);
 
-    const logout = () => signOut(auth);
+  const logout = () => signOut(auth);
 
-    return (
-        <AuthContext.Provider value={{ currentUser, logout }}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider
+      value={{ currentUser, logout, isLoggedIn, setIsLoggedIn }}
+    >
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

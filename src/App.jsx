@@ -6,11 +6,9 @@ import ChatPage from './Components/ChatPage';
 import Navbar from './Components/Navbar';
 
 
-
 const App = () => {
     return (
         <Router>
-            
                 <Navbar />
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
@@ -18,7 +16,6 @@ const App = () => {
                     <Route path="/signin" element={<SignIn />} />
                     <Route path="/chat" element={<ChatPage />} />
                 </Routes>
-           
         </Router>
     );
 };
