@@ -116,6 +116,9 @@ const ChatComponent = () => {
                     <p className="text-sm">{message.text}</p>
                     <span className="text-xs text-gray-600">
                       {new Date(message.timestamp).toLocaleString()}
+                      {message.sender === currentUser.uid && message.status === 'sent' && ' ⏳'}
+                      {message.sender === currentUser.uid && message.status === 'delivered' && ' ✓'}
+                      {message.sender === currentUser.uid && message.status === 'read' && ' 📘'}
                     </span>
                   </div>
                 </div>

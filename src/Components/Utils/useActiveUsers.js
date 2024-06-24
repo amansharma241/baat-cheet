@@ -49,7 +49,7 @@ const useActiveUsers = () => {
       off(usersRef, handleUserStatus);
       off(statusRef);
     };
-  }, [currentUser]);
+  }, [activeUsers,inactiveUsers]);
 
   return { activeUsers, inactiveUsers };
 };
