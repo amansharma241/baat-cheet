@@ -25,6 +25,7 @@ const ChatProvider = ({ children }) => {
           id: key,
           ...messagesData[key],
         }));
+        console.log("messages--", messagesList)
         setMessages(messagesList);
       } else {
         setMessages([]);
@@ -90,6 +91,8 @@ const ChatProvider = ({ children }) => {
       receiver: selectedUser.uid,
       text: newMessage,
       timestamp: Date.now(),
+      status: 'sent', 
+      read: false 
     };
 
     const messagesRef = ref(db, "messages");

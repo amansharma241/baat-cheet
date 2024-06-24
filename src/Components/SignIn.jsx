@@ -1,43 +1,55 @@
-// src/components/SignIn.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth"; // Import Firebase functions for authentication
-import { auth, googleProvider } from "../firebase";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { ref, update } from "firebase/database";
+import { auth, googleProvider, db } from "../firebase";
 import { useAuth } from "../Contexts/AuthContext";
 
 const SignIn = () => {
   const navigate = useNavigate();
   const { setIsLoggedIn } = useAuth();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const updateUserPresence = (uid, isOnline) => {
+    const userStatusRef = ref(db, `/status/${uid}`);
+    update(userStatusRef, {
+      online: isOnline,
+      last_changed: Date.now(),
+    });
+  };
+
   const handleGoogleSignIn = async () => {
     try {
       const res = await signInWithPopup(auth, googleProvider);
-      console.log("res", res);
-      if (res) {
+      if (res.user) {
+        updateUserPresence(res.user.uid, true);
         navigate("/chat");
         setIsLoggedIn(true);
-      } else setError(res.error);
+      } else {
+        setError(res.error);
+      }
     } catch (error) {
       console.error(error.message);
     }
   };
 
-    const handleSignInWithEmail = async (e) => {
-      e.preventDefault();
-      try {
-        const res = await signInWithEmailAndPassword(auth, email, password);
-        if (res) {
-          navigate("/chat");
-          setIsLoggedIn(true);
-        } else setError(res.error);
-      } catch (error) {
-        setError(error.message);
+  const handleSignInWithEmail = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      if (res.user) {
+        updateUserPresence(res.user.uid, true);
+        navigate("/chat");
+        setIsLoggedIn(true);
+      } else {
+        setError(res.error);
       }
-    };
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">

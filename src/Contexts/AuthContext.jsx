@@ -1,39 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
-import usePresence from "../Components/Utils/usePresence";
+import { ref, update } from "firebase/database";
 
 const AuthContext = createContext();
+
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  usePresence(currentUser)
- 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        setIsLoggedIn(true);
+        // Set user status to online
+        const userStatusRef = ref(db, `/status/${user.uid}`);
+        update(userStatusRef, { online: true });
+      } else {
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+      }
     });
+
+    return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    if (currentUser) {
-      setIsLoggedIn(true);
-    }
-  }, [currentUser]);
+  const logout = async () => {
+    const userStatusRef = ref(db, `/status/${currentUser.uid}`);
+    await update(userStatusRef, { online: false });
+    await signOut(auth);
+  };
 
-  const logout = () => signOut(auth);
+  const value = {
+    currentUser,
+    isLoggedIn,
+    setIsLoggedIn,
+    logout,
+  };
 
-  return (
-    <AuthContext.Provider
-      value={{ currentUser, logout, isLoggedIn, setIsLoggedIn }}
-    >
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export const useAuth = () => useContext(AuthContext);
