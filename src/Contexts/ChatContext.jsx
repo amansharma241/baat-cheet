@@ -296,11 +296,19 @@ const ChatProvider = ({ children }) => {
     return () => off(messagesRef);
   }, [currentUser, activeUsers]);
 
+  const markMessageAsRead = (messageId) => {
+    const messageRef = ref(db, `messages/${messageId}`);
+    update(messageRef, { status: "read", read: true })
+      .then(() => console.log(`Message ${messageId} marked as read`))
+      .catch((error) => console.error('Error marking message as read:', error));
+  };
+
   const values = {
     messages,
     selectedUser,
     setSelectedUser,
     handleSendMessage,
+    markMessageAsRead
   };
 
   return <ChatContext.Provider value={values}>{children}</ChatContext.Provider>;

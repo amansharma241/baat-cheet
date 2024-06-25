@@ -29,10 +29,6 @@ const useRealtimeMessageStatus = () => {
               update(ref(db, `messages/${message.id}`), { status: "delivered" });
             }
           }
-          if (message.receiver === currentUser.uid && message.status === "delivered") {
-            // Assuming the message is read when delivered for simplicity
-            update(ref(db, `messages/${message.id}`), { status: "read", read: true });
-          }
         });
       } else {
         setMessages([]);
