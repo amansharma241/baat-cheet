@@ -8,7 +8,7 @@ import { FirebaseProvider } from './Contexts/FirebaseContext.jsx';
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+
     <AuthProvider>
       <FirebaseProvider>
       <ChatProvider>
@@ -16,5 +16,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       </ChatProvider>
       </FirebaseProvider>
     </AuthProvider>
-  </React.StrictMode>,
+,
 )

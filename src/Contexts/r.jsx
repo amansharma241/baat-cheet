@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useChat } from "../Contexts/ChatContext";
 import useActiveUsers from "./Utils/useActiveUsers";
 import { useAuth } from "../Contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ref, onValue, update, off } from "firebase/database";
-import { db } from '../firebase';
+import useMessageStatus from "./Utils/useMessageStatus"; // Import useMessageStatus hook
 
 const ChatComponent = () => {
   const { messages, selectedUser, setSelectedUser, handleSendMessage } = useChat();
@@ -12,6 +11,9 @@ const ChatComponent = () => {
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
   const { activeUsers, inactiveUsers } = useActiveUsers();
+
+  // Use the useMessageStatus hook to handle message status updates
+  useMessageStatus(currentUser, messages);
 
   const handleUserClick = (user) => {
     setSelectedUser(user);
@@ -30,56 +32,6 @@ const ChatComponent = () => {
     if (newMessage.trim() !== "") {
       handleSendMessage(newMessage, setNewMessage); // Pass setNewMessage to clear input
     }
-  };
-
-  const handleReadMessage = (messageId) => {
-    const messageRef = ref(db, `messages/${messageId}`);
-    update(messageRef, { status: "read", read: true })
-      .then(() => {
-        console.log("Message marked as read:", messageId);
-      })
-      .catch((error) => {
-        console.error("Error updating message read status:", error);
-      });
-  };
-
-  const renderMessageStatus = (message) => {
-    if(message.sender===currentUser.uid){
-    return (
-      <span className="text-xs text-gray-600">
-       
-        {message.status === "sent" && <span> <i>✔</i> </span>}
-        {message.status === "delivered" && <span> <i>✔✔</i> </span>}
-        {message.status === "read" && <span className="colour-blue-500"> <i>✔✔</i> </span>}
-      </span>
-    );
-  };
-}
-
-  useEffect(() => {
-    const messagesRef = ref(db, 'messages');
-    const handleUpdateStatus = (snapshot) => {
-      const messagesData = snapshot.val();
-      if (messagesData) {
-        Object.keys(messagesData).forEach((key) => {
-          const message = messagesData[key];
-          if (message.receiver === currentUser.uid && !message.read) {
-            updateMessageStatus(message.id, 'delivered', false);
-          }
-        });
-      }
-    };
-
-    onValue(messagesRef, handleUpdateStatus);
-
-    return () => off(messagesRef, handleUpdateStatus);
-  }, [currentUser]);
-
-  const updateMessageStatus = (messageId, status, read) => {
-    const messageRef = ref(db, `messages/${messageId}`);
-    update(messageRef, { status, read })
-      .then(() => console.log(`Message ${messageId} updated to ${status}`))
-      .catch((error) => console.error('Error updating message status:', error));
   };
 
   return (
@@ -145,30 +97,46 @@ const ChatComponent = () => {
         {/* Chat Messages */}
         <div className="flex flex-col flex-1 overflow-y-auto p-4">
           {selectedUser ? (
-            Object.values(messages)
+            messages
               .filter(
                 (message) =>
                   (message.sender === currentUser.uid && message.receiver === selectedUser.uid) ||
                   (message.sender === selectedUser.uid && message.receiver === currentUser.uid)
               )
-              .map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === currentUser.uid ? "justify-end" : "justify-start"
-                  } mb-2`}
-                >
+              .map((message) => {
+                // Determine message status based on recipient's online status
+                const recipient = activeUsers.find((user) => user.id === selectedUser.uid) || inactiveUsers.find((user) => user.id === selectedUser.uid);
+                const isRecipientActive = recipient && recipient.online;
+
+                return (
                   <div
-                    className={`${
-                      message.sender === currentUser.uid ? "bg-blue-300" : "bg-gray-300"
-                    } p-2 rounded`}
+                    key={message.id}
+                    className={`flex ${
+                      message.sender === currentUser.uid ? "justify-end" : "justify-start"
+                    } mb-2`}
                   >
-                    <p className="text-sm">{message.text}</p>
-                    <p className="text-sm">{new Date(message.timestamp).toLocaleString()}</p>
-                    {renderMessageStatus(message)}
+                    <div
+                      className={`${
+                        message.sender === currentUser.uid ? "bg-blue-300" : "bg-gray-300"
+                      } p-2 rounded`}
+                    >
+                      <p className="text-sm">{message.text}</p>
+                      <span className="text-xs text-gray-600">
+                        {new Date(message.timestamp).toLocaleString()}
+                        {message.sender === currentUser.uid && message.status === "sent" && (
+                          <span> <i>Sent</i> </span>
+                        )}
+                        {message.sender !== currentUser.uid && isRecipientActive && !message.read && (
+                          <span> <b>Delivered</b> </span>
+                        )}
+                        {message.sender !== currentUser.uid && isRecipientActive && message.read && (
+                          <span> <b>Read</b> </span>
+                        )}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
           ) : (
             <p className="text-center text-gray-500">Select a user to start chatting</p>
           )}
@@ -199,4 +167,3 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
-
