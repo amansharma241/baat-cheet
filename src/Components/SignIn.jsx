@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { ref, update } from "firebase/database";
+import { ref, update,get,set } from "firebase/database";
 import { auth, googleProvider, db } from "../firebase";
 import { useAuth } from "../Contexts/AuthContext";
 
@@ -20,18 +20,57 @@ const SignIn = () => {
     });
   };
 
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     const res = await signInWithPopup(auth, googleProvider);
+  //     if (res.user) {
+  //       updateUserPresence(res.user.uid, true);
+  //       navigate("/chat");
+  //       setIsLoggedIn(true);
+  //     } else {
+  //       setError(res.error);
+  //     }
+  //   } catch (error) {
+  //     console.error(error.message);
+  //   }
+  // };
+
   const handleGoogleSignIn = async () => {
+    
+  
     try {
       const res = await signInWithPopup(auth, googleProvider);
+  
       if (res.user) {
+        // Check if the user already exists in the database
+        const userRef = ref(db, `users/${res.user.uid}`);
+        const snapshot = await get(userRef);
+  
+        if (!snapshot.exists()) {
+          // User does not exist in the database, save their entry
+          await set(userRef, {
+            uid: res.user.uid,
+            displayName: res.user.displayName,
+            email: res.user.email,
+            photoURL: res.user.photoURL,
+            // Add any other relevant user data you want to save
+          });
+        }
+  
+        // Update user presence
         updateUserPresence(res.user.uid, true);
+  
+        // Navigate to chat page or any other destination
         navigate("/chat");
+  
+        // Set logged-in state if necessary
         setIsLoggedIn(true);
       } else {
+        // Handle error if user is not returned
         setError(res.error);
       }
     } catch (error) {
-      console.error(error.message);
+      console.error("Error signing in with Google:", error.message);
     }
   };
 
