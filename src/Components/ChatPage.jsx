@@ -7,7 +7,7 @@ import { ref, onValue, update, off } from "firebase/database";
 import { db } from '../firebase';
 
 const ChatComponent = () => {
-  const { messages, selectedUser, setSelectedUser, handleSendMessage } = useChat();
+  const { messages, selectedUser, setSelectedUser, handleSendMessage,markMessageAsRead } = useChat();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
@@ -32,16 +32,7 @@ const ChatComponent = () => {
     }
   };
 
-  const handleReadMessage = (messageId) => {
-    const messageRef = ref(db, `messages/${messageId}`);
-    update(messageRef, { status: "read", read: true })
-      .then(() => {
-        console.log("Message marked as read:", messageId);
-      })
-      .catch((error) => {
-        console.error("Error updating message read status:", error);
-      });
-  };
+
 
   const renderMessageStatus = (message) => {
     if(message.sender===currentUser.uid){
@@ -50,7 +41,7 @@ const ChatComponent = () => {
        
         {message.status === "sent" && <span> <i>✔</i> </span>}
         {message.status === "delivered" && <span> <i>✔✔</i> </span>}
-        {message.status === "read" && <span className="colour-blue-500"> <i>✔✔</i> </span>}
+        {message.status === "read" && <span className="colour-blue-500"> <i>✔✔✔</i> </span>}
       </span>
     );
   };
@@ -74,6 +65,21 @@ const ChatComponent = () => {
 
     return () => off(messagesRef, handleUpdateStatus);
   }, [currentUser]);
+
+  useEffect(() => {
+    if (selectedUser) {
+      messages
+        .filter(
+          (message) =>
+            message.receiver === currentUser.uid && 
+            message.sender === selectedUser.uid && 
+            message.status === "delivered"
+        )
+        .forEach((message) => {
+          markMessageAsRead(message.id);
+        });
+    }
+  }, [selectedUser, messages]);
 
   const updateMessageStatus = (messageId, status, read) => {
     const messageRef = ref(db, `messages/${messageId}`);
