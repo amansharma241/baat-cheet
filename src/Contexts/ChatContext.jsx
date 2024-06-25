@@ -274,7 +274,7 @@ const ChatProvider = ({ children }) => {
     if (!currentUser) return;
 
     const messagesRef = ref(db, "messages");
-    onValue(messagesRef, (snapshot) => {
+    const listener = onValue(messagesRef, (snapshot) => {
       const messagesData = snapshot.val();
       if (messagesData) {
         const messagesList = Object.keys(messagesData).map((key) => ({
@@ -293,7 +293,7 @@ const ChatProvider = ({ children }) => {
       }
     });
 
-    return () => off(messagesRef);
+    return () => off(messagesRef, listener);
   }, [currentUser, activeUsers]);
 
   const markMessageAsRead = (messageId) => {
@@ -308,7 +308,7 @@ const ChatProvider = ({ children }) => {
     selectedUser,
     setSelectedUser,
     handleSendMessage,
-    markMessageAsRead
+    markMessageAsRead,
   };
 
   return <ChatContext.Provider value={values}>{children}</ChatContext.Provider>;

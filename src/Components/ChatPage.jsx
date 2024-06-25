@@ -47,24 +47,24 @@ const ChatComponent = () => {
   };
 }
 
-  useEffect(() => {
-    const messagesRef = ref(db, 'messages');
-    const handleUpdateStatus = (snapshot) => {
-      const messagesData = snapshot.val();
-      if (messagesData) {
-        Object.keys(messagesData).forEach((key) => {
-          const message = messagesData[key];
-          if (message.receiver === currentUser.uid && !message.read) {
-            updateMessageStatus(message.id, 'delivered', false);
-          }
-        });
-      }
-    };
+  // useEffect(() => {
+  //   const messagesRef = ref(db, 'messages');
+  //   const handleUpdateStatus = (snapshot) => {
+  //     const messagesData = snapshot.val();
+  //     if (messagesData) {
+  //       Object.keys(messagesData).forEach((key) => {
+  //         const message = messagesData[key];
+  //         if (message.receiver === currentUser.uid && !message.read) {
+  //           updateMessageStatus(message.id, 'delivered', false);
+  //         }
+  //       });
+  //     }
+  //   };
 
-    onValue(messagesRef, handleUpdateStatus);
+  //   onValue(messagesRef, handleUpdateStatus);
 
-    return () => off(messagesRef, handleUpdateStatus);
-  }, [currentUser]);
+  //   return () => off(messagesRef, handleUpdateStatus);
+  // }, [currentUser]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -81,12 +81,12 @@ const ChatComponent = () => {
     }
   }, [selectedUser, messages]);
 
-  const updateMessageStatus = (messageId, status, read) => {
-    const messageRef = ref(db, `messages/${messageId}`);
-    update(messageRef, { status, read })
-      .then(() => console.log(`Message ${messageId} updated to ${status}`))
-      .catch((error) => console.error('Error updating message status:', error));
-  };
+  // const updateMessageStatus = (messageId, status, read) => {
+  //   const messageRef = ref(db, `messages/${messageId}`);
+  //   update(messageRef, { status, read })
+  //     .then(() => console.log(`Message ${messageId} updated to ${status}`))
+  //     .catch((error) => console.error('Error updating message status:', error));
+  // };
 
   return (
     <div className="flex h-screen">
