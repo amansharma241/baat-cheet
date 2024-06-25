@@ -6,11 +6,66 @@ import { useNavigate } from "react-router-dom";
 
 
 const ChatComponent = () => {
-  const { messages, selectedUser, setSelectedUser, handleSendMessage,markMessageAsRead } = useChat();
+//   const { messages, selectedUser, setSelectedUser, handleSendMessage,markMessageAsRead } = useChat();
+//   const { currentUser, logout } = useAuth();
+//   const navigate = useNavigate();
+//   const [newMessage, setNewMessage] = useState("");
+//   const { activeUsers, inactiveUsers } = useActiveUsers();
+
+//   const handleUserClick = (user) => {
+//     setSelectedUser(user);
+//   };
+
+//   const handleLogout = async () => {
+//     try {
+//       await logout();
+//       navigate("/signin");
+//     } catch (error) {
+//       console.error("Failed to log out:", error.message);
+//     }
+//   };
+
+//   const handleMessageSend = () => {
+//     if (newMessage.trim() !== "") {
+//       handleSendMessage(newMessage, setNewMessage); 
+//     }
+//   };
+
+
+
+//   const renderMessageStatus = (message) => {
+//     if(message.sender===currentUser.uid){
+//     return (
+//       <span className="text-xs text-gray-600">
+       
+//         {message.status === "sent" && <span> <i>✔</i> </span>}
+//         {message.status === "delivered" && <span> <i>✔✔</i> </span>}
+//         {message.status === "read" && <span className="colour-blue-500"> <i>✔✔✔</i> </span>}
+//       </span>
+//     );
+//   };
+// }
+
+//   useEffect(() => {
+//     if (selectedUser) {
+//       messages
+//         .filter(
+//           (message) =>
+//             message.receiver === currentUser.uid && 
+//             message.sender === selectedUser.uid && 
+//             message.status === "delivered"
+//         )
+//         .forEach((message) => {
+//           markMessageAsRead(message.id);
+//         });
+//     }
+//   }, [selectedUser, messages]);
+
+const { messages, selectedUser, setSelectedUser, handleSendMessage, markMessageAsRead } = useChat();
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState("");
-  const { activeUsers, inactiveUsers } = useActiveUsers();
+  const { activeUsers,inactiveUsers } = useActiveUsers();
 
   const handleUserClick = (user) => {
     setSelectedUser(user);
@@ -27,24 +82,21 @@ const ChatComponent = () => {
 
   const handleMessageSend = () => {
     if (newMessage.trim() !== "") {
-      handleSendMessage(newMessage, setNewMessage); 
+      handleSendMessage(newMessage, setNewMessage);
     }
   };
 
-
-
   const renderMessageStatus = (message) => {
-    if(message.sender===currentUser.uid){
-    return (
-      <span className="text-xs text-gray-600">
-       
-        {message.status === "sent" && <span> <i>✔</i> </span>}
-        {message.status === "delivered" && <span> <i>✔✔</i> </span>}
-        {message.status === "read" && <span className="colour-blue-500"> <i>✔✔✔</i> </span>}
-      </span>
-    );
+    if (message.sender === currentUser.uid) {
+      return (
+        <span className="text-xs text-gray-600">
+          {message.status === "sent" && <span> <i>Sent</i> </span>}
+          {message.status === "delivered" && <span> <i>Delivered</i> </span>}
+          {message.status === "read" && <span> <i>Read</i> </span>}
+        </span>
+      );
+    }
   };
-}
 
   useEffect(() => {
     if (selectedUser) {
