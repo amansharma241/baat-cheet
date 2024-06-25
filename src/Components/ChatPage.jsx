@@ -90,9 +90,9 @@ const { messages, selectedUser, setSelectedUser, handleSendMessage, markMessageA
     if (message.sender === currentUser.uid) {
       return (
         <span className="text-xs text-gray-600">
-          {message.status === "sent" && <span> <i>Sent</i> </span>}
-          {message.status === "delivered" && <span> <i>Delivered</i> </span>}
-          {message.status === "read" && <span> <i>Read</i> </span>}
+          {message.status === "sent" && <span> <i>✔</i> </span>}
+          {message.status === "delivered" && <span> <i>✔✔</i> </span>}
+          {message.status === "read" && <span> <i>✔✔✔</i> </span>}
         </span>
       );
     }
