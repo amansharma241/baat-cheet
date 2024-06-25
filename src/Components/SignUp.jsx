@@ -15,25 +15,21 @@ const SignUp = () => {
         e.preventDefault();
         setError('');
         try {
-            // Step 1: Create user in Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Step 2: Update user information in Firebase Realtime Database
             await set(ref(db, 'users/' + user.uid), {
                 email: user.email,
                 active: true,
                 lastActive: Date.now(),
             });
 
-            // Step 3: Set user status to online in the 'status' node
             const statusRef = ref(db, 'status/' + user.uid);
             await set(statusRef, {
                 online: true,
                 last_changed: Date.now(),
             });
 
-            // Step 4: Set success message and navigate to chat page
             setSuccess('Sign up successful! You can now log in.');
             navigate('/chat');
         } catch (err) {

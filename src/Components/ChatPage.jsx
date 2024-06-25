@@ -3,8 +3,7 @@ import { useChat } from "../Contexts/ChatContext";
 import useActiveUsers from "./Utils/useActiveUsers";
 import { useAuth } from "../Contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ref, onValue, update, off } from "firebase/database";
-import { db } from '../firebase';
+
 
 const ChatComponent = () => {
   const { messages, selectedUser, setSelectedUser, handleSendMessage,markMessageAsRead } = useChat();
@@ -28,7 +27,7 @@ const ChatComponent = () => {
 
   const handleMessageSend = () => {
     if (newMessage.trim() !== "") {
-      handleSendMessage(newMessage, setNewMessage); // Pass setNewMessage to clear input
+      handleSendMessage(newMessage, setNewMessage); 
     }
   };
 
@@ -47,25 +46,6 @@ const ChatComponent = () => {
   };
 }
 
-  // useEffect(() => {
-  //   const messagesRef = ref(db, 'messages');
-  //   const handleUpdateStatus = (snapshot) => {
-  //     const messagesData = snapshot.val();
-  //     if (messagesData) {
-  //       Object.keys(messagesData).forEach((key) => {
-  //         const message = messagesData[key];
-  //         if (message.receiver === currentUser.uid && !message.read) {
-  //           updateMessageStatus(message.id, 'delivered', false);
-  //         }
-  //       });
-  //     }
-  //   };
-
-  //   onValue(messagesRef, handleUpdateStatus);
-
-  //   return () => off(messagesRef, handleUpdateStatus);
-  // }, [currentUser]);
-
   useEffect(() => {
     if (selectedUser) {
       messages
@@ -80,13 +60,6 @@ const ChatComponent = () => {
         });
     }
   }, [selectedUser, messages]);
-
-  // const updateMessageStatus = (messageId, status, read) => {
-  //   const messageRef = ref(db, `messages/${messageId}`);
-  //   update(messageRef, { status, read })
-  //     .then(() => console.log(`Message ${messageId} updated to ${status}`))
-  //     .catch((error) => console.error('Error updating message status:', error));
-  // };
 
   return (
     <div className="flex h-screen">
